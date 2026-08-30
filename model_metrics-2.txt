@@ -1,0 +1,17 @@
+=== RUL Regression (RandomForestRegressor) ===
+MAE:  9.02 cycles
+RMSE: 14.99 cycles
+
+=== Risk Classification (RandomForestClassifier) ===
+Accuracy: 0.952
+Weighted F1: 0.954
+
+Test units (held out entirely): [np.int64(5), np.int64(7), np.int64(13), np.int64(16), np.int64(17), np.int64(20), np.int64(27), np.int64(28), np.int64(38), np.int64(40)]
+Train rows: 6705, Test rows: 2434
+
+Top 5 features by importance:
+Current_A_roll_mean           0.467154
+Vibration_mm_s                0.183597
+Bearing_Noise_dB_roll_mean    0.080874
+Temperature_C                 0.076219
+Load_Factor                   0.069418
