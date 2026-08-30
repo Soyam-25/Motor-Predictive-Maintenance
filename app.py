@@ -3,12 +3,6 @@ app.py
 ------
 Streamlit dashboard for the Industrial Motor Predictive Maintenance
 System. Run with:  streamlit run app.py
-
-Shows:
-    - Fleet-wide risk overview (which motors need attention now)
-    - Per-unit sensor trend + predicted vs actual RUL
-    - Feature importance (which sensor drives the prediction most)
-    - Model performance metrics
 """
 
 import pandas as pd
@@ -34,9 +28,18 @@ st.title("🔧 Industrial Motor Predictive Maintenance Dashboard")
 st.caption("Fleet of 40 simulated motors · RandomForest RUL regression + risk classification")
 
 # ---------------------------------------------------------------
-# Fleet overview: latest reading per unit
+# Fleet overview: a snapshot in time across the fleet
 # ---------------------------------------------------------------
-latest = df.sort_values("Cycle").groupby("Unit_ID").tail(1).sort_values("RUL")
+# NOTE: this dataset logs each motor's FULL run-to-failure history, so
+# the very last row for every motor is always its failure point (RUL=0).
+# Using that as "current status" would show every motor as High risk,
+# which isn't a meaningful fleet snapshot. Instead we pick a single
+# cycle number (140) that every motor has already reached without
+# having failed yet (all motors run for a minimum of 150 cycles) - that
+# gives a realistic "if you checked the fleet today" snapshot with a
+# genuine mix of risk levels instead of a false all-failing picture.
+SNAPSHOT_CYCLE = 140
+latest = df[df["Cycle"] == SNAPSHOT_CYCLE].copy().sort_values("RUL")
 
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Motors in fleet", latest["Unit_ID"].nunique())
@@ -44,7 +47,7 @@ col2.metric("High risk now", int((latest["Risk_Level"] == "High").sum()))
 col3.metric("Medium risk now", int((latest["Risk_Level"] == "Medium").sum()))
 col4.metric("Low risk now", int((latest["Risk_Level"] == "Low").sum()))
 
-st.subheader("Fleet Risk Overview (most recent reading per motor)")
+st.subheader(f"Fleet Risk Overview (snapshot at cycle {SNAPSHOT_CYCLE} for every motor)")
 fig_fleet = px.bar(
     latest.sort_values("RUL"),
     x="Unit_ID", y="RUL", color="Risk_Level",
